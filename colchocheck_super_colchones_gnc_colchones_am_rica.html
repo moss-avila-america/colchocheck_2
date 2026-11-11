@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ColchoCheck — Super Colchones (GNC) • Colchones América</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0369a1',
+              800: '#0f2942',
+              900: '#091929'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- TOP DEMO BAR / ROLE SWITCHER FOR EXECUTIVE PRESENTATION -->
+  <div class="bg-slate-900 text-white text-xs px-3 py-2 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 sticky top-0 z-40">
+    <div class="flex items-center gap-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span class="font-semibold tracking-wide text-slate-200">MODO DEMO BETA FASE 1 • SUPER COLCHONES (GNC)</span>
+    </div>
+    <div class="flex flex-wrap items-center gap-1.5">
+      <span class="text-slate-400 hidden sm:inline">Cambiar vista rápida:</span>
+      <button type="button" onclick="quickSwitchRole('1001')" class="px-2 py-1 rounded bg-slate-800 hover:bg-sky-700 text-slate-200 font-medium transition">Promotor (1001)</button>
+      <button type="button" onclick="quickSwitchRole('2001')" class="px-2 py-1 rounded bg-slate-800 hover:bg-sky-700 text-slate-200 font-medium transition">Supervisor (2001)</button>
+      <button type="button" onclick="quickSwitchRole('3001')" class="px-2 py-1 rounded bg-slate-800 hover:bg-sky-700 text-slate-200 font-medium transition">Dirección/Ejecutivo (3001)</button>
+      <button type="button" onclick="quickSwitchRole('9999')" class="px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold transition">Administrador (9999)</button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-96 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+  <!-- CAMERA / PHOTO CAPTURE MODAL -->
+  <div id="cameraModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200">
+      <div class="bg-brand-800 text-white px-5 py-3.5 flex items-center justify-between">
+        <div>
+          <h3 id="cameraModalTitle" class="font-bold text-sm">Verificación Fotográfica + GPS</h3>
+          <p id="cameraModalSub" class="text-xs text-slate-300">Cámara en vivo obligatoria</p>
+        </div>
+        <button type="button" onclick="closeCameraModal()" class="text-slate-300 hover:text-white text-sm font-bold px-2 py-1">✕</button>
+      </div>
+      <div class="p-4 flex flex-col items-center">
+        <div class="relative w-full aspect-[4/3] bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center border border-slate-300">
+          <video id="cameraVideo" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+          <canvas id="cameraCanvas" width="480" height="360" class="w-full h-full object-cover"></canvas>
+          <div class="absolute top-2 left-2 bg-black/65 text-white text-[11px] px-2.5 py-1 rounded-full flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span id="cameraGpsLabel">GPS: Validado en Rango</span>
+          </div>
+          <div class="absolute bottom-2 right-2 bg-black/65 text-amber-300 text-[11px] font-mono px-2.5 py-1 rounded">
+            <span id="cameraTimeLabel">--:--:--</span>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 mt-3 text-center">La imagen se comprime automáticamente (&lt;250 KB) con marca de agua de fecha, hora de red y coordenadas GPS.</p>
+        <div class="grid grid-cols-2 gap-3 w-full mt-4">
+          <button type="button" onclick="closeCameraModal()" class="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Cancelar</button>
+          <button type="button" onclick="confirmCameraCapture()" class="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-sm">Capturar y Registrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTINGENCY ADMIN MODAL -->
+  <div id="contingencyModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200">
+      <div class="bg-amber-600 text-white px-5 py-3.5 flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-sm">Autorización de Contingencia (Administrador)</h3>
+          <p id="contingencyTargetLabel" class="text-xs text-amber-100">Cerrar visita por causa justificada</p>
+        </div>
+        <button type="button" onclick="closeContingencyModal()" class="text-amber-100 hover:text-white font-bold px-2 py-1">✕</button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Motivo de Contingencia / Excepción</label>
+          <select id="contingencyReason" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <option value="Enfermedad / Incapacidad médica">Enfermedad / Incapacidad médica</option>
+            <option value="Incidencia en sucursal / Tienda cerrada">Incidencia en sucursal / Tienda cerrada</option>
+            <option value="Falla mecánica o bloqueo vial en ruta">Falla mecánica o bloqueo vial en ruta</option>
+            <option value="Cambio de asignación urgente de gerencia">Cambio de asignación urgente de gerencia</option>
+            <option value="Falla eléctrica o sin señal en zona">Falla eléctrica o sin señal en zona</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nota de Auditoría (Responsable de Cuenta)</label>
+          <textarea id="contingencyNotes" rows="3" maxlength="250" placeholder="Detalle la autorización otorgada al colaborador..." class="w-full rounded-xl border border-slate-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button type="button" onclick="closeContingencyModal()" class="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">Cancelar</button>
+          <button type="button" onclick="confirmContingencyClose()" class="py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm">Autorizar y Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <div class="flex-1 flex flex-col max-w-6xl w-full mx-auto">
+
+    <!-- HEADER BAR (HIDDEN ON LOGIN) -->
+    <header id="appHeader" class="bg-brand-800 text-white px-4 py-3.5 shadow-md hidden items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center font-extrabold text-sky-300 text-lg">CC</div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-base tracking-tight">ColchoCheck</h1>
+            <span id="headerRoleBadge" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-sky-500 text-white">PROMOTOR</span>
+          </div>
+          <p id="headerUserSubtitle" class="text-xs text-slate-300">Super Colchones (GNC) • ZMG Jalisco</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-right hidden sm:block">
+          <div id="liveClockHeader" class="text-xs font-mono font-bold text-emerald-300">--:--:--</div>
+          <div class="text-[10px] text-slate-300">Hora Oficial Servidor</div>
+        </div>
+        <button type="button" onclick="logoutApp()" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold transition">Salir</button>
+      </div>
+    </header>
+
+    <!-- VIEW 1: LOGIN SCREEN -->
+    <main id="loginView" class="flex-1 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl shadow-xl border border-slate-200 max-w-md w-full p-6 sm:p-8">
+        <div class="flex flex-col items-center text-center mb-6">
+          <div class="w-16 h-16 rounded-2xl bg-brand-800 text-white flex items-center justify-center shadow-lg mb-3">
+            <svg class="w-9 h-9 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">ColchoCheck</h2>
+          <p class="text-xs font-semibold text-sky-700 uppercase tracking-wider mt-0.5">Super Colchones (GNC) • Colchones América</p>
+          <p class="text-xs text-slate-500 mt-2">Monitoreo de piso de venta, supervisión de rutas y folios de garantía con validación GPS.</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label for="loginColabId" class="block text-xs font-bold text-slate-700 uppercase mb-1">Número de Colaborador</label>
+            <input id="loginColabId" type="text" value="1001" placeholder="Ej. 1001, 2001, 3001, 9999" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label for="loginPassword" class="block text-xs font-bold text-slate-700 uppercase mb-1">Contraseña Asignada</label>
+            <input id="loginPassword" type="password" value="123" placeholder="••••••••" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <button type="button" onclick="handleLoginSubmit()" class="w-full py-3 rounded-xl bg-brand-800 hover:bg-brand-900 text-white font-bold text-sm shadow-md transition">
+            Iniciar Jornada
+          </button>
+        </div>
+
+        <!-- CREDENCIALES DE PRUEBA PARA DEMO -->
+        <div class="mt-6 pt-5 border-t border-slate-200">
+          <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5 text-center">Accesos Rápidos para tu Presentación (Click para entrar)</p>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button type="button" onclick="quickSwitchRole('1001')" class="p-2.5 rounded-xl border border-slate-200 hover:border-sky-500 hover:bg-sky-50 text-left transition">
+              <div class="font-bold text-slate-800">Promotor Piso</div>
+              <div class="text-[11px] text-slate-500">ID: 1001 • Pass: 123</div>
+            </button>
+            <button type="button" onclick="quickSwitchRole('2001')" class="p-2.5 rounded-xl border border-slate-200 hover:border-sky-500 hover:bg-sky-50 text-left transition">
+              <div class="font-bold text-slate-800">Supervisor Ruta</div>
+              <div class="text-[11px] text-slate-500">ID: 2001 • Pass: 123</div>
+            </button>
+            <button type="button" onclick="quickSwitchRole('3001')" class="p-2.5 rounded-xl border border-slate-200 hover:border-sky-500 hover:bg-sky-50 text-left transition">
+              <div class="font-bold text-slate-800">Gerencia / Dir.</div>
+              <div class="text-[11px] text-slate-500">ID: 3001 • Pass: 123</div>
+            </button>
+            <button type="button" onclick="quickSwitchRole('9999')" class="p-2.5 rounded-xl border border-amber-300 bg-amber-50/60 hover:bg-amber-100 text-left transition">
+              <div class="font-bold text-amber-900">Administrador (Tú)</div>
+              <div class="text-[11px] text-amber-700">ID: 9999 • Pass: 123</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 2: PROMOTOR VIEW -->
+    <section id="promotorView" class="flex-1 p-4 space-y-4 hidden">
+      <!-- SIMULADOR DE GEOCERCA PARA LA DEMO -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-sky-100 text-sky-800">Control de Geocerca 100m (Demo en Vivo)</span>
+          <p class="text-xs text-slate-600 mt-1">Simula la distancia del promotor respecto a la sucursal asignada para probar el bloqueo antes de llegar al piso de venta:</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" id="btnSimInside" onclick="setSimulatedDistance(18)" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">En Piso de Venta (18 m)</button>
+          <button type="button" id="btnSimOutside" onclick="setSimulatedDistance(420)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-200 text-slate-700 hover:bg-rose-100 hover:text-rose-800">En Traslado / Fuera (420 m)</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <!-- COLUMNA IZQUIERDA: ROL DEL DÍA Y RELOJ EFECTIVO -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider">1. Tu Rol Asignado Hoy</h3>
+              <span id="promVisitStatusBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">Pendiente</span>
+            </div>
+
+            <label for="promStoreSelect" class="block text-xs font-semibold text-slate-600 mb-1">Sucursal Asignada por Supervisor:</label>
+            <select id="promStoreSelect" onchange="handlePromotorStoreChange()" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-semibold bg-slate-50 mb-3"></select>
+
+            <div id="promStoreDetailsCard" class="rounded-xl bg-slate-50 p-3.5 border border-slate-200 text-xs space-y-1.5 mb-4"></div>
+
+            <!-- CRONÓMETRO DE TIEMPO EFECTIVO EN PISO -->
+            <div class="rounded-2xl bg-brand-900 text-white p-4 text-center mb-4">
+              <div class="text-[11px] uppercase tracking-wider text-sky-300 font-semibold">Tiempo Efectivo en Piso de Venta</div>
+              <div id="promElapsedTimer" class="text-3xl font-mono font-extrabold tracking-widest my-1">00:00:00</div>
+              <div id="promCheckTimesLabel" class="text-[11px] text-slate-300">Sin registro de entrada aún</div>
+            </div>
+
+            <!-- BOTONES DE ENTRADA Y SALIDA -->
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" id="btnPromCheckIn" onclick="startPromotorCheckIn()" class="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-1.5">
+                <span>📷 Entrada + GPS</span>
+              </button>
+              <button type="button" id="btnPromCheckOut" onclick="startPromotorCheckOut()" class="py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-1.5 opacity-50 cursor-not-allowed" disabled>
+                <span>🏁 Cerrar Visita</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: COMENTARIOS FINALES (BLOQUEADOS HASTA EL CIERRE) -->
+        <div class="lg:col-span-7">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider">2. Comentarios de Fin de Día (Cierre de Piso)</h3>
+                <p id="promFormLockNotice" class="text-xs text-amber-700 font-medium mt-0.5">🔒 Se habilita únicamente posterior al cierre de visita (Salida registrada).</p>
+              </div>
+              <span class="text-xs font-semibold text-slate-500" id="promActiveBranchLabel">Suc. Revolución</span>
+            </div>
+
+            <div id="promClosingFormContainer" class="space-y-3.5 opacity-50 pointer-events-none transition">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="promAfluencia" class="block text-xs font-bold text-slate-700 mb-1">• Afluencia en Tienda (Precargada)</label>
+                  <select id="promAfluencia" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm bg-white">
+                    <option value="Nula">Nula</option>
+                    <option value="Baja">Baja</option>
+                    <option value="Media" selected>Media</option>
+                    <option value="Alta">Alta</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="promIngresos" class="block text-xs font-bold text-slate-700 mb-1">• Ingresos de Clientes (1 al 9999)</label>
+                  <div class="flex items-center gap-2">
+                    <input id="promIngresos" type="number" min="1" max="9999" value="18" oninput="syncIngresosRange(this.value)" class="w-28 rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-center">
+                    <input id="promIngresosSlider" type="range" min="1" max="500" value="18" oninput="syncIngresosInput(this.value)" class="flex-1 accent-brand-600">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <label for="promVentaAmerica" class="font-bold text-slate-700">• Venta Colchones América (Libre escritura)</label>
+                  <span id="countVentaAmerica" class="text-slate-400 font-mono">0 / 140</span>
+                </div>
+                <input id="promVentaAmerica" type="text" maxlength="140" oninput="updateCharCount('promVentaAmerica','countVentaAmerica',140)" placeholder="Ej. 2 Matrimoniales Restonic / América $14,800 pagados" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <label for="promVentaComp" class="font-bold text-slate-700">• Ventas Competencia (Libre escritura)</label>
+                  <span id="countVentaComp" class="text-slate-400 font-mono">0 / 140</span>
+                </div>
+                <input id="promVentaComp" type="text" maxlength="140" oninput="updateCharCount('promVentaComp','countVentaComp',140)" placeholder="Ej. 1 King Size Spring Air $9,200 a meses sin intereses" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <label for="promPresupAmerica" class="font-bold text-slate-700">• 1 Presupuesto Colchones América (Libre escritura)</label>
+                  <span id="countPresupAmerica" class="text-slate-400 font-mono">0 / 140</span>
+                </div>
+                <input id="promPresupAmerica" type="text" maxlength="140" oninput="updateCharCount('promPresupAmerica','countPresupAmerica',140)" placeholder="Ej. Cotización Queen América Ortopédico $8,450 cliente regresa sábado" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <label for="promPresupComp" class="font-bold text-slate-700">• 1 Presupuesto Competencia (Libre escritura)</label>
+                  <span id="countPresupComp" class="text-slate-400 font-mono">0 / 140</span>
+                </div>
+                <input id="promPresupComp" type="text" maxlength="140" oninput="updateCharCount('promPresupComp','countPresupComp',140)" placeholder="Ej. Cotización Sealy Individual $5,900 comparando firmeza" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm">
+              </div>
+
+              <button type="button" onclick="savePromotorDailyReport()" class="w-full py-3 rounded-xl bg-brand-800 hover:bg-brand-900 text-white font-bold text-sm shadow">
+                Guardar Comentarios de Cierre de Día
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: SUPERVISOR VIEW -->
+    <section id="supervisorView" class="flex-1 p-4 space-y-4 hidden">
+      <!-- SUB-NAVEGACIÓN DEL SUPERVISOR -->
+      <div class="bg-white rounded-2xl p-2 border border-slate-200 shadow-sm flex flex-wrap gap-2">
+        <button type="button" id="supTabBtnRuta" onclick="switchSupervisorTab('ruta')" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white">1. Mi Plan Diario (Máx 10 Visitas + Garantías)</button>
+        <button type="button" id="supTabBtnRol" onclick="switchSupervisorTab('rol')" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">2. Cargar Rol a Promotores y Monitoreo</button>
+        <button type="button" id="supTabBtnCierre" onclick="switchSupervisorTab('cierre')" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">3. Cierre General del Día (1000 car.)</button>
+      </div>
+
+      <!-- TAB 1 SUPERVISOR: PLAN DE TRABAJO DIARIO (MÁX 10 VISITAS: SUCURSAL O FOLIO GARANTÍA) -->
+      <div id="supTabRuta" class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-5 space-y-4">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3.5">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-sm text-slate-800 uppercase">Agregar Parada al Plan de Hoy</h3>
+              <span id="supStopsCounterBadge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">3 / 10 visitas</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tipo de Visita de Supervisión</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" id="btnTypeSucursal" onclick="setSupVisitType('Sucursal')" class="py-2 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white">🏬 Sucursal GNC</button>
+                <button type="button" id="btnTypeGarantia" onclick="setSupVisitType('Garantia')" class="py-2 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700">🛠️ Folio Garantía</button>
+              </div>
+            </div>
+
+            <div id="supBranchSelectWrap">
+              <label for="supBranchSelect" class="block text-xs font-bold text-slate-700 mb-1">Seleccionar Sucursal Super Colchones</label>
+              <select id="supBranchSelect" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm bg-white"></select>
+            </div>
+
+            <div id="supWarrantyInputsWrap" class="space-y-3 hidden">
+              <div>
+                <label for="supWarrantyFolio" class="block text-xs font-bold text-slate-700 mb-1">Número de Folio de Garantía a Verificar</label>
+                <input id="supWarrantyFolio" type="text" placeholder="Ej. GAR-GNC-2026-0849" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label for="supWarrantyLocation" class="block text-xs font-bold text-slate-700 mb-1">Colonia / Referencia del Domicilio Cliente</label>
+                <input id="supWarrantyLocation" type="text" placeholder="Ej. Col. Providencia, Guadalajara (GPS Libre)" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+              </div>
+            </div>
+
+            <button type="button" onclick="addSupervisorStop()" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm shadow">
+              + Agregar al Plan de Trabajo (Máx. 10)
+            </button>
+          </div>
+
+          <!-- CARD DETALLE DE VERIFICACIÓN DE GARANTÍA (6 FOTOS + FOLIO) -->
+          <div id="warrantyInspectorBox" class="bg-white rounded-2xl p-5 border-2 border-amber-400 shadow-sm space-y-3 hidden">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-800">Evidencia de Garantía</span>
+                <h4 id="warrantyBoxTitle" class="font-bold text-sm text-slate-900 mt-1">Folio: GAR-2026</h4>
+              </div>
+              <span id="warrantyPhotosCounter" class="text-xs font-bold text-amber-800">0 / 6 Fotos</span>
+            </div>
+            <p class="text-xs text-slate-600">En visita de garantía puedes capturar desde la cámara o adjuntar de la galería las 6 fotografías de inspección del producto:</p>
+            <div>
+              <label for="warrantyDictamenSelect" class="block text-xs font-bold text-slate-700 mb-1">Dictamen Técnico en Domicilio</label>
+              <select id="warrantyDictamenSelect" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold bg-white">
+                <option value="Procede Cambio por Garantía">Procede Cambio por Garantía (Hundimiento / Defecto)</option>
+                <option value="No Procede (Manchas / Mal Uso / Base Inadecuada)">No Procede (Manchas / Mal Uso / Base Inadecuada)</option>
+                <option value="En Revisión con Planta Colchones América">En Revisión con Planta Colchones América</option>
+              </select>
+            </div>
+            <div id="warrantySixGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+            <button type="button" onclick="finishWarrantyInspection()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow">
+              Guardar 6 Evidencias y Cerrar Visita de Garantía
+            </button>
+          </div>
+        </div>
+
+        <!-- LISTA DE EJECUCIÓN DE LAS 10 VISITAS CON TIEMPO DE ESTANCIA Y TRASLADO -->
+        <div class="lg:col-span-7">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div>
+                <h3 class="font-bold text-sm text-slate-800 uppercase">Ejecución de Ruta del Supervisor (Estancia + Traslados)</h3>
+                <p class="text-xs text-slate-500">El tiempo de traslado se calcula automáticamente entre la salida de una visita y la entrada a la siguiente.</p>
+              </div>
+            </div>
+            <div id="supRouteListContainer" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2 SUPERVISOR: CARGAR ROL A PROMOTORES Y VER SUS TIEMPOS -->
+      <div id="supTabRol" class="grid grid-cols-1 lg:grid-cols-12 gap-4 hidden">
+        <div class="lg:col-span-4">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3.5">
+            <h3 class="font-bold text-sm text-slate-800 uppercase">Asignar Rol Diario a Promotor</h3>
+            <div>
+              <label for="assignPromSelect" class="block text-xs font-bold text-slate-700 mb-1">Seleccionar Promotor</label>
+              <select id="assignPromSelect" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm bg-white"></select>
+            </div>
+            <div>
+              <label for="assignBranchSelect" class="block text-xs font-bold text-slate-700 mb-1">Sucursal Asignada</label>
+              <select id="assignBranchSelect" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm bg-white"></select>
+            </div>
+            <div>
+              <label for="assignDateInput" class="block text-xs font-bold text-slate-700 mb-1">Fecha de Rol</label>
+              <input id="assignDateInput" type="date" value="2026-11-04" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+            </div>
+            <button type="button" onclick="assignPromotorRole()" class="w-full py-2.5 rounded-xl bg-brand-800 hover:bg-brand-900 text-white font-bold text-sm">
+              Cargar Rol al Promotor
+            </button>
+          </div>
+        </div>
+        <div class="lg:col-span-8">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-sm text-slate-800 uppercase mb-3">Monitoreo de Promotores en Piso y Comentarios de Cierre</h3>
+            <div id="supPromotorMonitorList" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3 SUPERVISOR: CIERRE GENERAL DEL DÍA (1000 CARACTERES) -->
+      <div id="supTabCierre" class="max-w-2xl mx-auto hidden">
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-base text-slate-800 uppercase">Cierre de Día del Supervisor</h3>
+              <p class="text-xs text-slate-500">Resumen ejecutivo de plazas visitadas, incidencias de piso, exhibiciones y garantías.</p>
+            </div>
+            <span id="supFinalCharCounter" class="text-xs font-mono font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-lg">0 / 1000</span>
+          </div>
+          <textarea id="supFinalCommentText" rows="6" maxlength="1000" oninput="updateCharCount('supFinalCommentText','supFinalCharCounter',1000)" placeholder="Escribe tus comentarios generales del cierre de jornada (máximo 1000 caracteres)..." class="w-full rounded-xl border border-slate-300 p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+          <button type="button" onclick="submitSupervisorDailyClosure()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow">
+            Enviar Cierre General de Supervisión
+          </button>
+          <div id="supSavedClosuresList" class="pt-3 border-t border-slate-200 space-y-2"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: ADMIN / DIRECCIÓN / GERENCIA / EJECUTIVO VIEW -->
+    <section id="adminExecutiveView" class="flex-1 p-4 space-y-4 hidden">
+      <!-- BANNER DIFERENCIADOR DE PERMISOS -->
+      <div id="rolePermissionBanner" class="rounded-2xl p-4 border flex flex-wrap items-center justify-between gap-3"></div>
+
+      <!-- NAVEGACIÓN INTERNA DE GESTIÓN -->
+      <div class="bg-white rounded-2xl p-2 border border-slate-200 shadow-sm flex flex-wrap gap-2">
+        <button type="button" id="admTabBtnSheet" onclick="switchAdminTab('sheet')" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white">📊 Hoja de Cálculo Resumida (Promotores y Supervisores)</button>
+        <button type="button" id="admTabBtnBranches" onclick="switchAdminTab('branches')" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">📍 Catálogo de Sucursales y Geocerca 100m</button>
+        <button type="button" id="admTabBtnUsers" onclick="switchAdminTab('users')" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">👥 Usuarios, Contraseñas y Roles</button>
+      </div>
+
+      <!-- SUB-VISTA 1: HOJA DE CÁLCULO RESUMIDA + CONTINGENCIAS -->
+      <div id="admTabSheet" class="space-y-4">
+        <!-- KPI CARDS -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[11px] font-bold text-slate-500 uppercase">Sucursales Activas GNC</div>
+            <div id="kpiBranchesCount" class="text-2xl font-extrabold text-slate-900 mt-1">10</div>
+            <div class="text-[11px] text-emerald-600 font-medium">8 Plazas Regionales</div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[11px] font-bold text-slate-500 uppercase">Visitas Promotoría</div>
+            <div id="kpiPromVisitsCount" class="text-2xl font-extrabold text-sky-700 mt-1">0</div>
+            <div class="text-[11px] text-slate-500">Con Tiempo Efectivo</div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[11px] font-bold text-slate-500 uppercase">Visitas Supervisión</div>
+            <div id="kpiSupVisitsCount" class="text-2xl font-extrabold text-indigo-700 mt-1">0</div>
+            <div class="text-[11px] text-slate-500">Estancia + Traslados + Garantías</div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[11px] font-bold text-slate-500 uppercase">Exportación Directa</div>
+            <button type="button" onclick="exportAllToCSV()" class="mt-1.5 w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow">
+              ⬇ Descargar Excel (.CSV)
+            </button>
+          </div>
+        </div>
+
+        <!-- FILTRO POR PLAZA -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <label for="filterPlazaSelect" class="text-xs font-bold text-slate-700 uppercase">Filtrar Plaza Super Colchones:</label>
+            <select id="filterPlazaSelect" onchange="renderAdminSpreadsheet()" class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-semibold bg-white">
+              <option value="TODAS">Todas las Plazas (Jalisco, Vallarta, Tepic, Colima, Manzanillo, Mazatlán, Culiacán, Mochis)</option>
+              <option value="ZMG Jalisco">ZMG Jalisco (Área Metropolitana)</option>
+              <option value="Puerto Vallarta">Puerto Vallarta</option>
+              <option value="Tepic">Tepic</option>
+              <option value="Colima">Colima</option>
+              <option value="Manzanillo">Manzanillo</option>
+              <option value="Mazatlán">Mazatlán</option>
+              <option value="Culiacán">Culiacán</option>
+              <option value="Los Mochis">Los Mochis</option>
+            </select>
+          </div>
+          <span class="text-xs text-slate-500">Vista consolidada en tiempo real</span>
+        </div>
+
+        <!-- TABLA 1: CONCENTRADO DE PROMOTORES -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <h3 class="font-bold text-xs sm:text-sm text-slate-800 uppercase">Concentrado de Fuerza de Ventas (Promotores en Piso)</h3>
+            <span class="text-[11px] text-slate-500 font-medium">Incluye tiempos efectivos, afluencia, ventas y presupuestos</span>
+          </div>
+          <div class="overflow-x-auto custom-scroll">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 uppercase text-[11px] border-b border-slate-200">
+                  <th class="py-2.5 px-3">Plaza / Sucursal</th>
+                  <th class="py-2.5 px-3">Promotor</th>
+                  <th class="py-2.5 px-3">Estatus</th>
+                  <th class="py-2.5 px-3">Entrada / Salida</th>
+                  <th class="py-2.5 px-3 text-right">T. Efectivo</th>
+                  <th class="py-2.5 px-3">Afluencia / Ingresos</th>
+                  <th class="py-2.5 px-3">Venta América / Comp.</th>
+                  <th class="py-2.5 px-3">Presupuestos (América / Comp.)</th>
+                  <th class="py-2.5 px-3 text-center">Acción Admin</th>
+                </tr>
+              </thead>
+              <tbody id="adminPromotorTableBody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TABLA 2: CONCENTRADO DE SUPERVISORES (ESTANCIA + TRASLADO + GARANTÍAS) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <h3 class="font-bold text-xs sm:text-sm text-slate-800 uppercase">Concentrado de Supervisores (Tiempos Efectivos, Traslados y Garantías)</h3>
+            <span class="text-[11px] text-slate-500 font-medium">Máximo 10 visitas diarias por supervisor</span>
+          </div>
+          <div class="overflow-x-auto custom-scroll">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 uppercase text-[11px] border-b border-slate-200">
+                  <th class="py-2.5 px-3"># / Tipo</th>
+                  <th class="py-2.5 px-3">Supervisor / Plaza</th>
+                  <th class="py-2.5 px-3">Sucursal o Folio Garantía</th>
+                  <th class="py-2.5 px-3">Estatus</th>
+                  <th class="py-2.5 px-3">Entrada / Salida</th>
+                  <th class="py-2.5 px-3 text-right">T. Traslado</th>
+                  <th class="py-2.5 px-3 text-right">T. Estancia</th>
+                  <th class="py-2.5 px-3">Evidencias / Notas</th>
+                  <th class="py-2.5 px-3 text-center">Acción Admin</th>
+                </tr>
+              </thead>
+              <tbody id="adminSupervisorTableBody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-VISTA 2: CATÁLOGO DE SUCURSALES Y GEOCERCA 100 METROS -->
+      <div id="admTabBranches" class="grid grid-cols-1 lg:grid-cols-12 gap-4 hidden">
+        <div class="lg:col-span-4">
+          <div id="branchFormCard" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3.5">
+            <h3 class="font-bold text-sm text-slate-800 uppercase">Alta de Sucursal (Móvil / Nube)</h3>
+            <p class="text-xs text-slate-500">Agrega cualquier sucursal de Super Colchones (GNC) y sus coordenadas GPS para activar el candado de 100 metros.</p>
+            <div>
+              <label for="newBranchCode" class="block text-xs font-bold text-slate-700 mb-1">Código de Sucursal</label>
+              <input id="newBranchCode" type="text" placeholder="Ej. GDL-VAL" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label for="newBranchName" class="block text-xs font-bold text-slate-700 mb-1">Nombre de Sucursal</label>
+              <input id="newBranchName" type="text" placeholder="Ej. Suc. Vallarta San Jorge" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label for="newBranchPlaza" class="block text-xs font-bold text-slate-700 mb-1">Plaza Regional</label>
+              <select id="newBranchPlaza" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white">
+                <option value="ZMG Jalisco">ZMG Jalisco</option>
+                <option value="Puerto Vallarta">Puerto Vallarta</option>
+                <option value="Tepic">Tepic</option>
+                <option value="Colima">Colima</option>
+                <option value="Manzanillo">Manzanillo</option>
+                <option value="Mazatlán">Mazatlán</option>
+                <option value="Culiacán">Culiacán</option>
+                <option value="Los Mochis">Los Mochis</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label for="newBranchLat" class="block text-xs font-bold text-slate-700 mb-1">Latitud</label>
+                <input id="newBranchLat" type="number" step="0.0001" value="20.6765" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-mono">
+              </div>
+              <div>
+                <label for="newBranchLng" class="block text-xs font-bold text-slate-700 mb-1">Longitud</label>
+                <input id="newBranchLng" type="number" step="0.0001" value="-103.3812" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-mono">
+              </div>
+            </div>
+            <button type="button" onclick="fillCurrentGpsForBranch()" class="w-full py-2 rounded-xl border border-sky-300 bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs">
+              📍 Capturar Coordenadas de mi Ubicación Actual
+            </button>
+            <button type="button" onclick="createNewBranch()" class="w-full py-2.5 rounded-xl bg-brand-800 hover:bg-brand-900 text-white font-bold text-sm">
+              Guardar Sucursal con Geocerca 100m
+            </button>
+          </div>
+        </div>
+        <div class="lg:col-span-8">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-sm text-slate-800 uppercase mb-3">Catálogo Activo Super Colchones (GNC) — Bloqueo 100 metros</h3>
+            <div id="branchesCatalogList" class="space-y-2.5"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-VISTA 3: GESTIÓN DE USUARIOS Y PERFILES (SIN CORREO ELECTRÓNICO) -->
+      <div id="admTabUsers" class="grid grid-cols-1 lg:grid-cols-12 gap-4 hidden">
+        <div class="lg:col-span-4">
+          <div id="userFormCard" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3.5">
+            <h3 class="font-bold text-sm text-slate-800 uppercase">Asignar Nuevo Acceso (User & Password)</h3>
+            <p class="text-xs text-slate-500">Sin correos electrónicos: asigna el número de colaborador, contraseña y su nivel de acceso.</p>
+            <div>
+              <label for="newUserColabId" class="block text-xs font-bold text-slate-700 mb-1">No. de Colaborador (User Login)</label>
+              <input id="newUserColabId" type="text" placeholder="Ej. 1008 o SUP-04" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label for="newUserPass" class="block text-xs font-bold text-slate-700 mb-1">Contraseña Asignada</label>
+              <input id="newUserPass" type="text" value="Colcho2026" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-mono">
+            </div>
+            <div>
+              <label for="newUserName" class="block text-xs font-bold text-slate-700 mb-1">Nombre Completo</label>
+              <input id="newUserName" type="text" placeholder="Ej. Ana Sofía Méndez" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label for="newUserRole" class="block text-xs font-bold text-slate-700 mb-1">Perfil / Rol de Acceso</label>
+              <select id="newUserRole" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white">
+                <option value="promotor">Promotor (Rol, Foto+GPS, Cierre 6 métricas)</option>
+                <option value="supervisor">Supervisor (Ruta máx 10, Garantías, Rol Promotores)</option>
+                <option value="ejecutivo">Ejecutivo / Gerencia / Dirección (Lectura Total)</option>
+                <option value="admin">Administrador (Control Total + Contingencias)</option>
+              </select>
+            </div>
+            <div>
+              <label for="newUserPlaza" class="block text-xs font-bold text-slate-700 mb-1">Plaza Asignada</label>
+              <select id="newUserPlaza" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white">
+                <option value="ZMG Jalisco">ZMG Jalisco</option>
+                <option value="Puerto Vallarta">Puerto Vallarta</option>
+                <option value="Tepic">Tepic</option>
+                <option value="Colima">Colima</option>
+                <option value="Manzanillo">Manzanillo</option>
+                <option value="Mazatlán">Mazatlán</option>
+                <option value="Culiacán">Culiacán</option>
+                <option value="Los Mochis">Los Mochis</option>
+                <option value="Todas las Plazas">Todas las Plazas</option>
+              </select>
+            </div>
+            <button type="button" onclick="createNewUserAccount()" class="w-full py-2.5 rounded-xl bg-brand-800 hover:bg-brand-900 text-white font-bold text-sm">
+              Habilitar Usuario
+            </button>
+          </div>
+        </div>
+        <div class="lg:col-span-8">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-sm text-slate-800 uppercase mb-3">Plantilla de Usuarios Habilitados</h3>
+            <div id="usersDirectoryList" class="space-y-2.5"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // =========================================================================
+    // ESTADO EN MEMORIA DE COLCHOCHECK (BETA FASE 1 - SUPER COLCHONES GNC)
+    // =========================================================================
+    const WARRANTY_PHOTO_LABELS = [
+      "1. Etiqueta / No. Serie",
+      "2. Vista Superior Completa",
+      "3. Evidencia Hundimiento/Daño",
+      "4. Base o Box del Cliente",
+      "5. Costuras y Bordes",
+      "6. Nota / Póliza de Garantía"
+    ];
+
+    const state = {
+      currentUser: null,
+      simulatedDistanceMeters: 18, // 18m = en piso de venta (<100m), 420m = bloqueado
+      activeCameraCallback: null,
+      activeContingencyTarget: null, // { type: 'promotor'|'supervisor', id: string }
+      activeWarrantyVisitId: null,
+      supVisitTypeSelected: 'Sucursal',
+      timerInterval: null,
+
+      usuarios: [
+        { id: '1001', pass: '123', nombre: 'Luis Fernando Gómez', rol: 'promotor', plaza: 'ZMG Jalisco', activo: true },
+        { id: '1002', pass: '123', nombre: 'María Elena Vázquez', rol: 'promotor', plaza: 'Puerto Vallarta', activo: true },
+        { id: '1003', pass: '123', nombre: 'Jorge Alberto Ríos', rol: 'promotor', plaza: 'Mazatlán', activo: true },
+        { id: '2001', pass: '123', nombre: 'Ing. Roberto Castañeda', rol: 'supervisor', plaza: 'ZMG Jalisco', activo: true },
+        { id: '2002', pass: '123', nombre: 'Lic. Patricia Morales', rol: 'supervisor', plaza: 'Mazatlán', activo: true },
+        { id: '3001', pass: '123', nombre: 'Dirección Comercial GNC / América', rol: 'ejecutivo', plaza: 'Todas las Plazas', activo: true },
+        { id: '9999', pass: '123', nombre: 'Responsable de Cuenta (Administrador)', rol: 'admin', plaza: 'Todas las Plazas', activo: true }
+      ],
+
+      sucursales: [
+        { codigo: 'GDL-REV', nombre: 'Suc. Revolución', plaza: 'ZMG Jalisco', lat: 20.6628, lng: -103.3215, geocercaActiva: true },
+        { codigo: 'GDL-PAT', nombre: 'Suc. Plaza Patria', plaza: 'ZMG Jalisco', lat: 20.7121, lng: -103.3782, geocercaActiva: true },
+        { codigo: 'GDL-TES', nombre: 'Suc. Tesistán / Zapopan', plaza: 'ZMG Jalisco', lat: 20.7965, lng: -103.4791, geocercaActiva: true },
+        { codigo: 'PVR-FCO', nombre: 'Suc. Fco. Villa Vallarta', plaza: 'Puerto Vallarta', lat: 20.6401, lng: -105.2219, geocercaActiva: true },
+        { codigo: 'TEP-INS', nombre: 'Suc. Insurgentes Tepic', plaza: 'Tepic', lat: 21.5039, lng: -104.8954, geocercaActiva: true },
+        { codigo: 'COL-CAM', nombre: 'Suc. Camino Real Colima', plaza: 'Colima', lat: 19.2452, lng: -103.7241, geocercaActiva: true },
+        { codigo: 'ZLO-COS', nombre: 'Suc. Blvd. Costero Manzanillo', plaza: 'Manzanillo', lat: 19.1028, lng: -104.3235, geocercaActiva: true },
+        { codigo: 'MZT-EJE', nombre: 'Suc. Ejército Mexicano Mazatlán', plaza: 'Mazatlán', lat: 23.2261, lng: -106.4189, geocercaActiva: true },
+        { codigo: 'CUL-TRR', nombre: 'Suc. Tres Ríos Culiacán', plaza: 'Culiacán', lat: 24.8142, lng: -107.4018, geocercaActiva: true },
+        { codigo: 'LMM-ROS', nombre: 'Suc. Rosales Los Mochis', plaza: 'Los Mochis', lat: 25.7905, lng: -108.9932, geocercaActiva: true }
+      ],
+
+      visitasPromotor: [
+        {
+          id: 'VP-101',
+          fecha: '2026-11-04',
+          numColaborador: '1001',
+          nombrePromotor: 'Luis Fernando Gómez',
+          sucursalCodigo: 'GDL-REV',
+          nombreSucursal: 'Suc. Revolución',
+          plaza: 'ZMG Jalisco',
+          supervisorAsigno: 'Ing. Roberto Castañeda',
+          estatus: 'Pendiente', // Pendiente | En Piso | Cerrada | Cerrada - Autorizada Admin
+          horaEntrada: null,
+          horaSalida: null,
+          startEpochMs: null,
+          tiempoEfectivoMin: 0,
+          afluencia: '',
+          ingresosClientes: 0,
+          ventaAmerica: '',
+          ventasCompetencia: '',
+          presupuestoAmerica: '',
+          presupuestoCompetencia: '',
+          notaAdmin: ''
+        },
+        {
+          id: 'VP-102',
+          fecha: '2026-11-04',
+          numColaborador: '1002',
+          nombrePromotor: 'María Elena Vázquez',
+          sucursalCodigo: 'PVR-FCO',
+          nombreSucursal: 'Suc. Fco. Villa Vallarta',
+          plaza: 'Puerto Vallarta',
+          supervisorAsigno: 'Ing. Roberto Castañeda',
+          estatus: 'Cerrada',
+          horaEntrada: '09:02:14',
+          horaSalida: '17:18:40',
+          startEpochMs: null,
+          tiempoEfectivoMin: 496,
+          afluencia: 'Alta',
+          ingresosClientes: 27,
+          ventaAmerica: '3 Matrimoniales América Ortopédico + 1 King ($28,900 total)',
+          ventasCompetencia: '1 Matrimonial Spring Air ($7,400)',
+          presupuestoAmerica: 'Cotización Queen América Luxury $11,200 cliente vuelve viernes',
+          presupuestoCompetencia: 'Cotización Sealy Posturepedic $10,800',
+          notaAdmin: ''
+        },
+        {
+          id: 'VP-103',
+          fecha: '2026-11-04',
+          numColaborador: '1003',
+          nombrePromotor: 'Jorge Alberto Ríos',
+          sucursalCodigo: 'MZT-EJE',
+          nombreSucursal: 'Suc. Ejército Mexicano Mazatlán',
+          plaza: 'Mazatlán',
+          supervisorAsigno: 'Lic. Patricia Morales',
+          estatus: 'En Piso',
+          horaEntrada: '10:15:00',
+          horaSalida: null,
+          startEpochMs: Date.now() - (145 * 60 * 1000),
+          tiempoEfectivoMin: 145,
+          afluencia: '',
+          ingresosClientes: 0,
+          ventaAmerica: '',
+          ventasCompetencia: '',
+          presupuestoAmerica: '',
+          presupuestoCompetencia: '',
+          notaAdmin: ''
+        }
+      ],
+
+      visitasSupervisor: [
+        {
+          id: 'VS-201',
+          orden: 1,
+          numSupervisor: '2001',
+          nombreSupervisor: 'Ing. Roberto Castañeda',
+          plaza: 'ZMG Jalisco',
+          tipo: 'Sucursal', // Sucursal | Garantia
+          sucursalCodigo: 'GDL-REV',
+          destinoNombre: 'Suc. Revolución',
+          folioGarantia: '',
+          dictamenGarantia: '',
+          fotosGarantia: [],
+          estatus: 'Cerrada',
+          horaEntrada: '09:10:00',
+          horaSalida: '10:05:00',
+          tiempoTrasladoMin: 0,
+          tiempoEstanciaMin: 55,
+          notaAdmin: ''
+        },
+        {
+          id: 'VS-202',
+          orden: 2,
+          numSupervisor: '2001',
+          nombreSupervisor: 'Ing. Roberto Castañeda',
+          plaza: 'ZMG Jalisco',
+          tipo: 'Garantia',
+          sucursalCodigo: '',
+          destinoNombre: 'Domicilio Cliente Col. Americana (Folio Garantía)',
+          folioGarantia: 'GAR-GNC-2026-0418',
+          dictamenGarantia: 'Procede Cambio por Garantía',
+          fotosGarantia: [true, true, true, true, true, true],
+          estatus: 'Cerrada',
+          horaEntrada: '10:32:00',
+          horaSalida: '11:10:00',
+          tiempoTrasladoMin: 27,
+          tiempoEstanciaMin: 38,
+          notaAdmin: ''
+        },
+        {
+          id: 'VS-203',
+          orden: 3,
+          numSupervisor: '2001',
+          nombreSupervisor: 'Ing. Roberto Castañeda',
+          plaza: 'ZMG Jalisco',
+          tipo: 'Sucursal',
+          sucursalCodigo: 'GDL-PAT',
+          destinoNombre: 'Suc. Plaza Patria',
+          folioGarantia: '',
+          dictamenGarantia: '',
+          fotosGarantia: [],
+          estatus: 'Pendiente',
+          horaEntrada: null,
+          horaSalida: null,
+          tiempoTrasladoMin: 0,
+          tiempoEstanciaMin: 0,
+          notaAdmin: ''
+        }
+      ],
+
+      cierresSupervisor: [
+        {
+          fecha: '2026-11-04',
+          supervisor: 'Ing. Roberto Castañeda',
+          plaza: 'ZMG Jalisco',
+          comentario: 'Se supervisó piso de venta en Suc. Revolución con POP completo de Colchones América. Se atendió garantía GAR-GNC-2026-0418 en Col. Americana adjuntando las 6 fotografías reglamentarias.'
+        }
+      ]
+    };
+
+    // =========================================================================
+    // UTILIDADES Y RELOJ EN TIEMPO REAL
+    // =========================================================================
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const colors = {
+        info: 'bg-slate-900 text-white border-slate-700',
+        success: 'bg-emerald-700 text-white border-emerald-500',
+        error: 'bg-rose-700 text-white border-rose-500',
+        warn: 'bg-amber-600 text-white border-amber-400'
+      };
+      const el = document.createElement('div');
+      el.className = `p-3.5 rounded-xl shadow-lg border text-xs font-semibold flex items-center justify-between gap-2 pointer-events-auto ${colors[type] || colors.info}`;
+      el.innerHTML = `<span>${msg}</span>`;
+      container.appendChild(el);
+      setTimeout(() => { el.remove(); }, 4000);
+    }
+
+    function formatTimeNow() {
+      const now = new Date();
+      return now.toTimeString().split(' ')[0];
+    }
+
+    function updateCharCount(inputId, counterId, maxLen) {
+      const val = document.getElementById(inputId).value || '';
+      document.getElementById(counterId).textContent = `${val.length} / ${maxLen}`;
+    }
+
+    function syncIngresosRange(val) {
+      const num = Math.max(1, Math.min(9999, parseInt(val || '1', 10)));
+      document.getElementById('promIngresos').value = num;
+      document.getElementById('promIngresosSlider').value = Math.min(500, num);
+    }
+
+    function syncIngresosInput(val) {
+      document.getElementById('promIngresos').value = val;
+    }
+
+    // Reloj global y cronómetro de estancia
+    function startGlobalClocks() {
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        const nowStr = formatTimeNow();
+        const clockEl = document.getElementById('liveClockHeader');
+        if (clockEl) clockEl.textContent = nowStr;
+        const camTimeEl = document.getElementById('cameraTimeLabel');
+        if (camTimeEl) camTimeEl.textContent = nowStr;
+
+        // Actualizar cronómetro del promotor si está "En Piso"
+        const visit = getActivePromotorVisit();
+        const timerEl = document.getElementById('promElapsedTimer');
+        if (visit && timerEl) {
+          if (visit.estatus === 'En Piso' && visit.startEpochMs) {
+            const diffSec = Math.max(0, Math.floor((Date.now() - visit.startEpochMs) / 1000));
+            const hrs = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+            const secs = String(diffSec % 60).padStart(2, '0');
+            timerEl.textContent = `${hrs}:${mins}:${secs}`;
+          } else if (visit.estatus === 'Cerrada' || visit.estatus.startsWith('Cerrada')) {
+            const hrs = String(Math.floor(visit.tiempoEfectivoMin / 60)).padStart(2, '0');
+            const mins = String(visit.tiempoEfectivoMin % 60).padStart(2, '0');
+            timerEl.textContent = `${hrs}:${mins}:00`;
+          } else {
+            timerEl.textContent = '00:00:00';
+          }
+        }
+      }, 1000);
+    }
+
+    // =========================================================================
+    // AUTENTICACIÓN Y CAMBIO DE PERFILES
+    // =========================================================================
+    function handleLoginSubmit() {
+      const id = document.getElementById('loginColabId').value.trim();
+      const pass = document.getElementById('loginPassword').value.trim();
+      const user = state.usuarios.find(u => u.id === id && u.pass === pass);
+      if (!user) {
+        showToast('Número de colaborador o contraseña incorrectos.', 'error');
+        return;
+      }
+      if (!user.activo) {
+        showToast('Este número de colaborador se encuentra dado de baja.', 'error');
+        return;
+      }
+      loginUserSession(user);
+    }
+
+    function quickSwitchRole(colabId) {
+      const user = state.usuarios.find(u => u.id === colabId);
+      if (!user) return;
+      document.getElementById('loginColabId').value = user.id;
+      document.getElementById('loginPassword').value = user.pass;
+      loginUserSession(user);
+    }
+
+    function loginUserSession(user) {
+      state.currentUser = user;
+      document.getElementById('loginView').classList.add('hidden');
+      document.getElementById('promotorView').classList.add('hidden');
+      document.getElementById('supervisorView').classList.add('hidden');
+      document.getElementById('adminExecutiveView').classList.add('hidden');
+
+      const header = document.getElementById('appHeader');
+      header.classList.remove('hidden');
+      header.classList.add('flex');
+
+      const roleLabels = {
+        promotor: 'PROMOTOR DE PISO',
+        supervisor: 'SUPERVISOR REGIONAL',
+        ejecutivo: 'EJECUTIVO / GERENCIA / DIRECCIÓN',
+        admin: 'ADMINISTRADOR GENERAL'
+      };
+      document.getElementById('headerRoleBadge').textContent = roleLabels[user.rol] || user.rol.toUpperCase();
+      document.getElementById('headerUserSubtitle').textContent = `${user.nombre} (#${user.id}) • Plaza: ${user.plaza}`;
+
+      if (user.rol === 'promotor') {
+        document.getElementById('promotorView').classList.remove('hidden');
+        renderPromotorView();
+      } else if (user.rol === 'supervisor') {
+        document.getElementById('supervisorView').classList.remove('hidden');
+        renderSupervisorView();
+      } else {
+        document.getElementById('adminExecutiveView').classList.remove('hidden');
+        renderAdminExecutiveView();
+      }
+      showToast(`Sesión iniciada: ${user.nombre}`, 'success');
+    }
+
+    function logoutApp() {
+      state.currentUser = null;
+      document.getElementById('appHeader').classList.add('hidden');
+      document.getElementById('appHeader').classList.remove('flex');
+      document.getElementById('promotorView').classList.add('hidden');
+      document.getElementById('supervisorView').classList.add('hidden');
+      document.getElementById('adminExecutiveView').classList.add('hidden');
+      document.getElementById('loginView').classList.remove('hidden');
+    }
+
+    // =========================================================================
+    // CÁMARA EN VIVO + SELLO DE AGUA GPS
+    // =========================================================================
+    function openCameraModal(title, subtitle, onConfirm) {
+      state.activeCameraCallback = onConfirm;
+      document.getElementById('cameraModalTitle').textContent = title;
+      document.getElementById('cameraModalSub').textContent = subtitle;
+      document.getElementById('cameraGpsLabel').textContent = `GPS Validado (${state.simulatedDistanceMeters}m de tienda)`;
+      const modal = document.getElementById('cameraModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      drawSimulatedCameraPreview(title, subtitle);
+    }
+
+    function drawSimulatedCameraPreview(title, subtitle) {
+      const canvas = document.getElementById('cameraCanvas');
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 480, 360);
+      grad.addColorStop(0, '#0f2942');
+      grad.addColorStop(1, '#1e3a5f');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 480, 360);
+
+      // Silueta de piso de venta y promotor
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fillRect(30, 40, 420, 260);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(30, 40, 420, 260);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(240, 140, 42, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.arc(240, 245, 75, Math.PI, 0);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('VERIFICACIÓN EN VIVO • SUPER COLCHONES (GNC)', 240, 75);
+
+      ctx.fillStyle = '#bae6fd';
+      ctx.font = '13px Inter, sans-serif';
+      ctx.fillText(title, 240, 275);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px monospace';
+      ctx.fillText(`Lat: 20.6628  Lng: -103.3215 • Precisión: ${state.simulatedDistanceMeters}m`, 240, 325);
+    }
+
+    function closeCameraModal() {
+      const modal = document.getElementById('cameraModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      state.activeCameraCallback = null;
+    }
+
+    function confirmCameraCapture() {
+      const cb = state.activeCameraCallback;
+      closeCameraModal();
+      if (typeof cb === 'function') cb();
+    }
+
+    // =========================================================================
+    // MÓDULO 1: PROMOTOR DE PISO DE VENTA
+    // =========================================================================
+    function setSimulatedDistance(meters) {
+      state.simulatedDistanceMeters = meters;
+      const btnIn = document.getElementById('btnSimInside');
+      const btnOut = document.getElementById('btnSimOutside');
+      if (meters <= 100) {
+        btnIn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white';
+        btnOut.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-200 text-slate-700';
+        showToast(`GPS en rango: ${meters}m del piso de venta (Geocerca <= 100m cumplida).`, 'success');
+      } else {
+        btnIn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-200 text-slate-700';
+        btnOut.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white';
+        showToast(`Simulando ubicación fuera de tienda (${meters}m). La app bloqueará el ingreso.`, 'warn');
+      }
+      renderPromotorView();
+    }
+
+    function getActivePromotorVisit() {
+      const select = document.getElementById('promStoreSelect');
+      const selectedId = select ? select.value : null;
+      return state.visitasPromotor.find(v => v.id === selectedId) || state.visitasPromotor[0];
+    }
+
+    function renderPromotorView() {
+      const select = document.getElementById('promStoreSelect');
+      const currentVal = select.value;
+      select.innerHTML = state.visitasPromotor.map(v =>
+        `<option value="${v.id}">${v.nombreSucursal} (${v.plaza}) — Promotor: ${v.nombrePromotor}</option>`
+      ).join('');
+      if (currentVal && state.visitasPromotor.some(v => v.id === currentVal)) {
+        select.value = currentVal;
+      }
+      handlePromotorStoreChange();
+    }
+
+    function handlePromotorStoreChange() {
+      const visit = getActivePromotorVisit();
+      if (!visit) return;
+      const branch = state.sucursales.find(s => s.codigo === visit.sucursalCodigo) || state.sucursales[0];
+
+      document.getElementById('promActiveBranchLabel').textContent = visit.nombreSucursal;
+
+      const badge = document.getElementById('promVisitStatusBadge');
+      if (visit.estatus === 'Pendiente') {
+        badge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800';
+      } else if (visit.estatus === 'En Piso') {
+        badge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800';
+      } else {
+        badge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+      }
+      badge.textContent = visit.estatus;
+
+      const withinFence = !branch.geocercaActiva || state.simulatedDistanceMeters <= 100;
+      document.getElementById('promStoreDetailsCard').innerHTML = `
+        <div class="flex justify-between">
+          <span class="text-slate-500">Plaza:</span>
+          <span class="font-bold text-slate-800">${visit.plaza}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Asignado por Supervisor:</span>
+          <span class="font-semibold text-slate-700">${visit.supervisorAsigno}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Coordenadas Sucursal:</span>
+          <span class="font-mono text-slate-700">${branch.lat}, ${branch.lng}</span>
+        </div>
+        <div class="flex justify-between items-center pt-1 border-t border-slate-200">
+          <span class="text-slate-500">Distancia Actual GPS:</span>
+          <span class="font-bold ${withinFence ? 'text-emerald-700' : 'text-rose-600'}">
+            ${state.simulatedDistanceMeters} metros ${withinFence ? '(Dentro de geocerca 100m)' : '(FUERA DE RANGO >100m)'}
+          </span>
+        </div>
+      `;
+
+      const checkInBtn = document.getElementById('btnPromCheckIn');
+      const checkOutBtn = document.getElementById('btnPromCheckOut');
+      const formWrap = document.getElementById('promClosingFormContainer');
+      const lockNotice = document.getElementById('promFormLockNotice');
+      const timesLabel = document.getElementById('promCheckTimesLabel');
+
+      if (visit.estatus === 'Pendiente') {
+        checkInBtn.disabled = false;
+        checkInBtn.className = 'py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-1.5';
+        checkOutBtn.disabled = true;
+        checkOutBtn.className = 'py-3 px-4 rounded-xl bg-rose-600 text-white font-bold text-xs sm:text-sm opacity-40 cursor-not-allowed flex items-center justify-center gap-1.5';
+        formWrap.classList.add('opacity-50', 'pointer-events-none');
+        lockNotice.textContent = '🔒 Se habilita únicamente posterior al cierre de visita (Salida registrada).';
+        lockNotice.className = 'text-xs text-amber-700 font-medium mt-0.5';
+        timesLabel.textContent = 'Esperando captura de entrada en piso de venta';
+      } else if (visit.estatus === 'En Piso') {
+        checkInBtn.disabled = true;
+        checkInBtn.className = 'py-3 px-4 rounded-xl bg-emerald-600 text-white font-bold text-xs sm:text-sm opacity-40 cursor-not-allowed flex items-center justify-center gap-1.5';
+        checkOutBtn.disabled = false;
+        checkOutBtn.className = 'py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-1.5';
+        formWrap.classList.add('opacity-50', 'pointer-events-none');
+        lockNotice.textContent = '⏳ Estancia en curso. Registra tu Salida para desbloquear los comentarios de fin de día.';
+        lockNotice.className = 'text-xs text-sky-700 font-medium mt-0.5';
+        timesLabel.textContent = `Entrada registrada: ${visit.horaEntrada} hrs`;
+      } else {
+        checkInBtn.disabled = true;
+        checkInBtn.className = 'py-3 px-4 rounded-xl bg-slate-400 text-white font-bold text-xs sm:text-sm opacity-40 cursor-not-allowed flex items-center justify-center gap-1.5';
+        checkOutBtn.disabled = true;
+        checkOutBtn.className = 'py-3 px-4 rounded-xl bg-slate-400 text-white font-bold text-xs sm:text-sm opacity-40 cursor-not-allowed flex items-center justify-center gap-1.5';
+        formWrap.classList.remove('opacity-50', 'pointer-events-none');
+        lockNotice.textContent = '✅ Visita cerrada. Ya puedes capturar o actualizar tus comentarios finales del día.';
+        lockNotice.className = 'text-xs text-emerald-700 font-semibold mt-0.5';
+        timesLabel.textContent = `Entrada: ${visit.horaEntrada || '--'} • Salida: ${visit.horaSalida || '--'} (${visit.tiempoEfectivoMin} min efectivos)`;
+      }
+
+      // Poblar campos si ya existen
+      document.getElementById('promAfluencia').value = visit.afluencia || 'Media';
+      document.getElementById('promIngresos').value = visit.ingresosClientes || 18;
+      document.getElementById('promIngresosSlider').value = Math.min(500, visit.ingresosClientes || 18);
+      document.getElementById('promVentaAmerica').value = visit.ventaAmerica || '';
+      document.getElementById('promVentaComp').value = visit.ventasCompetencia || '';
+      document.getElementById('promPresupAmerica').value = visit.presupuestoAmerica || '';
+      document.getElementById('promPresupComp').value = visit.presupuestoCompetencia || '';
+      updateCharCount('promVentaAmerica', 'countVentaAmerica', 140);
+      updateCharCount('promVentaComp', 'countVentaComp', 140);
+      updateCharCount('promPresupAmerica', 'countPresupAmerica', 140);
+      updateCharCount('promPresupComp', 'countPresupComp', 140);
+    }
+
+    function startPromotorCheckIn() {
+      const visit = getActivePromotorVisit();
+      const branch = state.sucursales.find(s => s.codigo === visit.sucursalCodigo) || state.sucursales[0];
+      if (branch.geocercaActiva && state.simulatedDistanceMeters > 100) {
+        showToast(`BLOQUEO DE GEOCERCA: Estás a ${state.simulatedDistanceMeters}m de ${visit.nombreSucursal}. Debes estar a menos de 100m del piso de venta.`, 'error');
+        return;
+      }
+      openCameraModal(
+        `Entrada: ${visit.nombreSucursal}`,
+        `Promotor: ${visit.nombrePromotor} • Geocerca OK (${state.simulatedDistanceMeters}m)`,
+        () => {
+          visit.estatus = 'En Piso';
+          visit.horaEntrada = formatTimeNow();
+          visit.startEpochMs = Date.now();
+          showToast(`Entrada registrada en ${visit.nombreSucursal} a las ${visit.horaEntrada}. Corriendo tiempo efectivo.`, 'success');
+          handlePromotorStoreChange();
+        }
+      );
+    }
+
+    function startPromotorCheckOut() {
+      const visit = getActivePromotorVisit();
+      openCameraModal(
+        `Salida de Tienda: ${visit.nombreSucursal}`,
+        `Cierre de piso de venta y desbloqueo de reporte diario`,
+        () => {
+          visit.estatus = 'Cerrada';
+          visit.horaSalida = formatTimeNow();
+          const elapsedMin = visit.startEpochMs ? Math.max(1, Math.round((Date.now() - visit.startEpochMs) / 60000)) : 480;
+          visit.tiempoEfectivoMin = elapsedMin < 5 ? 465 : elapsedMin; // Si es demo de segundos, muestra jornada representativa
+          showToast(`Salida registrada. Tiempo efectivo: ${visit.tiempoEfectivoMin} min. Completa tus comentarios de fin de día.`, 'success');
+          handlePromotorStoreChange();
+        }
+      );
+    }
+
+    function savePromotorDailyReport() {
+      const visit = getActivePromotorVisit();
+      if (!visit || visit.estatus === 'Pendiente' || visit.estatus === 'En Piso') {
+        showToast('Primero debes cerrar tu visita de sucursal para enviar comentarios de fin de día.', 'error');
+        return;
+      }
+      visit.afluencia = document.getElementById('promAfluencia').value;
+      visit.ingresosClientes = Math.max(1, Math.min(9999, parseInt(document.getElementById('promIngresos').value || '1', 10)));
+      visit.ventaAmerica = document.getElementById('promVentaAmerica').value.trim();
+      visit.ventasCompetencia = document.getElementById('promVentaComp').value.trim();
+      visit.presupuestoAmerica = document.getElementById('promPresupAmerica').value.trim();
+      visit.presupuestoCompetencia = document.getElementById('promPresupComp').value.trim();
+
+      showToast(`Reporte de fin de día guardado para ${visit.nombreSucursal}. Sincronizado con Hoja de Cálculo.`, 'success');
+    }
+
+    // =========================================================================
+    // MÓDULO 2: SUPERVISOR (PLAN MÁX 10 VISITAS + GARANTÍAS 6 FOTOS + ROL)
+    // =========================================================================
+    function switchSupervisorTab(tab) {
+      document.getElementById('supTabRuta').classList.toggle('hidden', tab !== 'ruta');
+      document.getElementById('supTabRol').classList.toggle('hidden', tab !== 'rol');
+      document.getElementById('supTabCierre').classList.toggle('hidden', tab !== 'cierre');
+
+      document.getElementById('supTabBtnRuta').className = tab === 'ruta'
+        ? 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white'
+        : 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+      document.getElementById('supTabBtnRol').className = tab === 'rol'
+        ? 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white'
+        : 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+      document.getElementById('supTabBtnCierre').className = tab === 'cierre'
+        ? 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white'
+        : 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+
+      renderSupervisorView();
+    }
+
+    function setSupVisitType(tipo) {
+      state.supVisitTypeSelected = tipo;
+      document.getElementById('supBranchSelectWrap').classList.toggle('hidden', tipo !== 'Sucursal');
+      document.getElementById('supWarrantyInputsWrap').classList.toggle('hidden', tipo !== 'Garantia');
+      document.getElementById('btnTypeSucursal').className = tipo === 'Sucursal'
+        ? 'py-2 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white'
+        : 'py-2 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700';
+      document.getElementById('btnTypeGarantia').className = tipo === 'Garantia'
+        ? 'py-2 px-3 rounded-xl text-xs font-bold bg-amber-600 text-white'
+        : 'py-2 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700';
+    }
+
+    function renderSupervisorView() {
+      // Poblar selectores de sucursales y promotores
+      const branchOpts = state.sucursales.map(s => `<option value="${s.codigo}">${s.nombre} (${s.plaza})</option>`).join('');
+      document.getElementById('supBranchSelect').innerHTML = branchOpts;
+      document.getElementById('assignBranchSelect').innerHTML = branchOpts;
+
+      const promOpts = state.usuarios.filter(u => u.rol === 'promotor' && u.activo).map(u =>
+        `<option value="${u.id}">${u.nombre} (#${u.id} • ${u.plaza})</option>`
+      ).join('');
+      document.getElementById('assignPromSelect').innerHTML = promOpts;
+
+      document.getElementById('supStopsCounterBadge').textContent = `${state.visitasSupervisor.length} / 10 visitas`;
+
+      // Renderizar lista de hasta 10 paradas del supervisor
+      const routeContainer = document.getElementById('supRouteListContainer');
+      routeContainer.innerHTML = state.visitasSupervisor.map(v => {
+        const isWarranty = v.tipo === 'Garantia';
+        const statusColor = v.estatus === 'Pendiente'
+          ? 'bg-amber-100 text-amber-800'
+          : (v.estatus === 'En Curso' ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800');
+
+        return `
+          <div class="p-4 rounded-xl border ${isWarranty ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200 bg-slate-50'} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-brand-800 text-white text-xs font-bold flex items-center justify-center">${v.orden}</span>
+                <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${isWarranty ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-800'}">
+                  ${isWarranty ? '🛠️ VISITA GARANTÍA' : '🏬 SUCURSAL GNC'}
+                </span>
+                <span class="font-bold text-sm text-slate-900">${v.destinoNombre}</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${statusColor}">${v.estatus}</span>
+              </div>
+              ${isWarranty ? `<div class="text-xs text-amber-900 font-semibold">Folio Verificado: ${v.folioGarantia} • Fotos: ${v.fotosGarantia.filter(Boolean).length}/6 ${v.dictamenGarantia ? '• ' + v.dictamenGarantia : ''}</div>` : ''}
+              <div class="text-xs text-slate-500 flex flex-wrap gap-3">
+                <span>Entrada: <b>${v.horaEntrada || '--:--'}</b></span>
+                <span>Salida: <b>${v.horaSalida || '--:--'}</b></span>
+                <span class="text-indigo-700 font-semibold">Traslado: ${v.tiempoTrasladoMin} min</span>
+                <span class="text-emerald-700 font-semibold">Estancia: ${v.tiempoEstanciaMin} min</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              ${v.estatus === 'Pendiente' ? `
+                <button type="button" onclick="supervisorCheckIn('${v.id}')" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow">
+                  📷 Entrada
+                </button>
+              ` : ''}
+              ${v.estatus === 'En Curso' && !isWarranty ? `
+                <button type="button" onclick="supervisorCheckOut('${v.id}')" class="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow">
+                  🏁 Salida
+                </button>
+              ` : ''}
+              ${v.estatus === 'En Curso' && isWarranty ? `
+                <button type="button" onclick="openWarrantyInspector('${v.id}')" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow">
+                  📸 Cargar 6 Fotos Garantía
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Renderizar monitoreo de promotores en pestaña 2
+      const promList = document.getElementById('supPromotorMonitorList');
+      promList.innerHTML = state.visitasPromotor.map(vp => `
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between gap-2 text-xs">
+          <div class="space-y-1">
+            <div class="font-bold text-slate-900">${vp.nombrePromotor} — <span class="text-sky-700">${vp.nombreSucursal} (${vp.plaza})</span></div>
+            <div class="text-slate-600">Entrada: <b>${vp.horaEntrada || '--'}</b> | Salida: <b>${vp.horaSalida || '--'}</b> | Tiempo Efectivo: <b>${vp.tiempoEfectivoMin} min</b></div>
+            ${vp.ventaAmerica ? `<div class="text-emerald-800 font-medium">• Venta América: ${vp.ventaAmerica} | Afluencia: ${vp.afluencia} (${vp.ingresosClientes} clientes)</div>` : '<div class="text-slate-400 italic">Sin comentarios de cierre aún</div>'}
+          </div>
+          <div class="flex items-center">
+            <span class="px-2.5 py-1 rounded-full font-bold text-[11px] ${vp.estatus === 'Cerrada' ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800'}">${vp.estatus}</span>
+          </div>
+        </div>
+      `).join('');
+
+      // Renderizar cierres generales guardados
+      const closuresEl = document.getElementById('supSavedClosuresList');
+      closuresEl.innerHTML = state.cierresSupervisor.map(c => `
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div class="font-bold text-slate-800">${c.supervisor} (${c.plaza}) — ${c.fecha}</div>
+          <p class="text-slate-600 mt-1">${c.comentario}</p>
+        </div>
+      `).join('');
+    }
+
+    function addSupervisorStop() {
+      if (state.visitasSupervisor.length >= 10) {
+        showToast('Límite alcanzado: El supervisor puede cargar máximo 10 visitas por día.', 'error');
+        return;
+      }
+      const nextOrder = state.visitasSupervisor.length + 1;
+      const supName = state.currentUser && state.currentUser.rol === 'supervisor' ? state.currentUser.nombre : 'Ing. Roberto Castañeda';
+      const supPlaza = state.currentUser && state.currentUser.rol === 'supervisor' ? state.currentUser.plaza : 'ZMG Jalisco';
+
+      if (state.supVisitTypeSelected === 'Sucursal') {
+        const code = document.getElementById('supBranchSelect').value;
+        const branch = state.sucursales.find(s => s.codigo === code) || state.sucursales[0];
+        state.visitasSupervisor.push({
+          id: 'VS-' + (200 + nextOrder),
+          orden: nextOrder,
+          numSupervisor: '2001',
+          nombreSupervisor: supName,
+          plaza: branch.plaza,
+          tipo: 'Sucursal',
+          sucursalCodigo: branch.codigo,
+          destinoNombre: branch.nombre,
+          folioGarantia: '',
+          dictamenGarantia: '',
+          fotosGarantia: [],
+          estatus: 'Pendiente',
+          horaEntrada: null,
+          horaSalida: null,
+          tiempoTrasladoMin: 0,
+          tiempoEstanciaMin: 0,
+          notaAdmin: ''
+        });
+        showToast(`Parada #${nextOrder} (${branch.nombre}) agregada al plan de hoy.`, 'success');
+      } else {
+        const folio = document.getElementById('supWarrantyFolio').value.trim() || ('GAR-GNC-2026-09' + nextOrder);
+        const loc = document.getElementById('supWarrantyLocation').value.trim() || 'Domicilio Cliente Verificación Garantía';
+        state.visitasSupervisor.push({
+          id: 'VS-' + (200 + nextOrder),
+          orden: nextOrder,
+          numSupervisor: '2001',
+          nombreSupervisor: supName,
+          plaza: supPlaza,
+          tipo: 'Garantia',
+          sucursalCodigo: '',
+          destinoNombre: `Garantía: ${loc}`,
+          folioGarantia: folio,
+          dictamenGarantia: '',
+          fotosGarantia: [false, false, false, false, false, false],
+          estatus: 'Pendiente',
+          horaEntrada: null,
+          horaSalida: null,
+          tiempoTrasladoMin: 0,
+          tiempoEstanciaMin: 0,
+          notaAdmin: ''
+        });
+        document.getElementById('supWarrantyFolio').value = '';
+        document.getElementById('supWarrantyLocation').value = '';
+        showToast(`Parada #${nextOrder} (Folio Garantía ${folio}) agregada al plan diario.`, 'success');
+      }
+      renderSupervisorView();
+    }
+
+    function supervisorCheckIn(visitId) {
+      const v = state.visitasSupervisor.find(item => item.id === visitId);
+      if (!v) return;
+      openCameraModal(
+        `Entrada Supervisión (#${v.orden}): ${v.destinoNombre}`,
+        v.tipo === 'Garantia' ? `Folio ${v.folioGarantia} • GPS Domicilio Libre` : 'Validación GPS de sucursal y cálculo de traslado',
+        () => {
+          v.estatus = 'En Curso';
+          v.horaEntrada = formatTimeNow();
+          v.tiempoTrasladoMin = v.orden === 1 ? 0 : (18 + (v.orden * 3));
+          showToast(`Entrada de supervisión registrada. Tiempo de traslado calculado: ${v.tiempoTrasladoMin} min.`, 'success');
+          renderSupervisorView();
+          if (v.tipo === 'Garantia') {
+            openWarrantyInspector(v.id);
+          }
+        }
+      );
+    }
+
+    function supervisorCheckOut(visitId) {
+      const v = state.visitasSupervisor.find(item => item.id === visitId);
+      if (!v) return;
+      openCameraModal(
+        `Salida Supervisión (#${v.orden}): ${v.destinoNombre}`,
+        'Cierre de estancia de supervisión en tienda',
+        () => {
+          v.estatus = 'Cerrada';
+          v.horaSalida = formatTimeNow();
+          v.tiempoEstanciaMin = 42;
+          showToast(`Visita #${v.orden} cerrada con éxito (${v.tiempoEstanciaMin} min de estancia efectiva).`, 'success');
+          renderSupervisorView();
+        }
+      );
+    }
+
+    function openWarrantyInspector(visitId) {
+      state.activeWarrantyVisitId = visitId;
+      const v = state.visitasSupervisor.find(item => item.id === visitId);
+      if (!v) return;
+      if (!v.fotosGarantia || v.fotosGarantia.length < 6) {
+        v.fotosGarantia = [false, false, false, false, false, false];
+      }
+      const box = document.getElementById('warrantyInspectorBox');
+      box.classList.remove('hidden');
+      document.getElementById('warrantyBoxTitle').textContent = `Folio: ${v.folioGarantia} — ${v.destinoNombre}`;
+      renderWarrantyPhotoSlots(v);
+    }
+
+    function renderWarrantyPhotoSlots(v) {
+      const doneCount = v.fotosGarantia.filter(Boolean).length;
+      document.getElementById('warrantyPhotosCounter').textContent = `${doneCount} / 6 Fotos`;
+      const grid = document.getElementById('warrantySixGrid');
+      grid.innerHTML = WARRANTY_PHOTO_LABELS.map((label, idx) => {
+        const loaded = v.fotosGarantia[idx];
+        return `
+          <button type="button" onclick="toggleWarrantyPhotoSlot(${idx})" class="p-2.5 rounded-xl border text-left transition flex flex-col justify-between h-24 ${loaded ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-slate-300 bg-slate-50 hover:border-amber-500 text-slate-700'}">
+            <div class="text-[11px] font-bold leading-tight">${label}</div>
+            <div class="text-[10px] font-semibold mt-2 flex items-center justify-between">
+              <span>${loaded ? '✅ Foto Adjuntada' : '📷 Cámara / Galería'}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleWarrantyPhotoSlot(slotIndex) {
+      const v = state.visitasSupervisor.find(item => item.id === state.activeWarrantyVisitId);
+      if (!v) return;
+      v.fotosGarantia[slotIndex] = true;
+      renderWarrantyPhotoSlots(v);
+      showToast(`Fotografía #${slotIndex + 1} (${WARRANTY_PHOTO_LABELS[slotIndex]}) adjuntada y comprimida.`, 'info');
+    }
+
+    function finishWarrantyInspection() {
+      const v = state.visitasSupervisor.find(item => item.id === state.activeWarrantyVisitId);
+      if (!v) return;
+      const count = v.fotosGarantia.filter(Boolean).length;
+      if (count < 6) {
+        // Autocompletar las 6 si están probando en demo o avisar
+        v.fotosGarantia = [true, true, true, true, true, true];
+      }
+      v.dictamenGarantia = document.getElementById('warrantyDictamenSelect').value;
+      v.estatus = 'Cerrada';
+      v.horaSalida = formatTimeNow();
+      v.tiempoEstanciaMin = 35;
+      document.getElementById('warrantyInspectorBox').classList.add('hidden');
+      showToast(`Folio de garantía ${v.folioGarantia} cerrado con sus 6 fotografías verificadas.`, 'success');
+      renderSupervisorView();
+    }
+
+    function assignPromotorRole() {
+      const promId = document.getElementById('assignPromSelect').value;
+      const branchCode = document.getElementById('assignBranchSelect').value;
+      const fecha = document.getElementById('assignDateInput').value;
+      const prom = state.usuarios.find(u => u.id === promId);
+      const branch = state.sucursales.find(s => s.codigo === branchCode);
+      if (!prom || !branch) return;
+
+      state.visitasPromotor.unshift({
+        id: 'VP-' + Math.floor(100 + Math.random() * 900),
+        fecha: fecha,
+        numColaborador: prom.id,
+        nombrePromotor: prom.nombre,
+        sucursalCodigo: branch.codigo,
+        nombreSucursal: branch.nombre,
+        plaza: branch.plaza,
+        supervisorAsigno: state.currentUser ? state.currentUser.nombre : 'Ing. Roberto Castañeda',
+        estatus: 'Pendiente',
+        horaEntrada: null,
+        horaSalida: null,
+        startEpochMs: null,
+        tiempoEfectivoMin: 0,
+        afluencia: '',
+        ingresosClientes: 0,
+        ventaAmerica: '',
+        ventasCompetencia: '',
+        presupuestoAmerica: '',
+        presupuestoCompetencia: '',
+        notaAdmin: ''
+      });
+      showToast(`Rol asignado: ${prom.nombre} en ${branch.nombre} (${fecha}).`, 'success');
+      renderSupervisorView();
+    }
+
+    function submitSupervisorDailyClosure() {
+      const txt = document.getElementById('supFinalCommentText').value.trim();
+      if (!txt) {
+        showToast('Escribe tus comentarios generales del día antes de enviar.', 'error');
+        return;
+      }
+      state.cierresSupervisor.unshift({
+        fecha: '2026-11-04',
+        supervisor: state.currentUser ? state.currentUser.nombre : 'Ing. Roberto Castañeda',
+        plaza: state.currentUser ? state.currentUser.plaza : 'ZMG Jalisco',
+        comentario: txt
+      });
+      document.getElementById('supFinalCommentText').value = '';
+      updateCharCount('supFinalCommentText', 'supFinalCharCounter', 1000);
+      showToast('Cierre general del supervisor guardado (máx. 1000 caracteres).', 'success');
+      renderSupervisorView();
+    }
+
+    // =========================================================================
+    // MÓDULO 3: ADMINISTRADOR Y EJECUTIVO / GERENCIA / DIRECCIÓN
+    // =========================================================================
+    function switchAdminTab(tab) {
+      document.getElementById('admTabSheet').classList.toggle('hidden', tab !== 'sheet');
+      document.getElementById('admTabBranches').classList.toggle('hidden', tab !== 'branches');
+      document.getElementById('admTabUsers').classList.toggle('hidden', tab !== 'users');
+
+      document.getElementById('admTabBtnSheet').className = tab === 'sheet'
+        ? 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white'
+        : 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+      document.getElementById('admTabBtnBranches').className = tab === 'branches'
+        ? 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white'
+        : 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+      document.getElementById('admTabBtnUsers').className = tab === 'users'
+        ? 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-brand-800 text-white'
+        : 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+
+      renderAdminExecutiveView();
+    }
+
+    function renderAdminExecutiveView() {
+      const isAdmin = state.currentUser && state.currentUser.rol === 'admin';
+      const banner = document.getElementById('rolePermissionBanner');
+      if (isAdmin) {
+        banner.className = 'rounded-2xl p-4 border border-amber-300 bg-amber-50 flex flex-wrap items-center justify-between gap-3';
+        banner.innerHTML = `
+          <div>
+            <span class="text-[11px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-600 text-white">MODO SUPERUSUARIO (ADMINISTRADOR)</span>
+            <p class="text-xs text-amber-900 font-medium mt-1">Tienes visualización total + facultad de edición por emergencia (cerrar visitas como autorizadas por enfermedad/imprevistos, dar de alta sucursales y asignar contraseñas).</p>
+          </div>
+        `;
+      } else {
+        banner.className = 'rounded-2xl p-4 border border-sky-200 bg-sky-50 flex flex-wrap items-center justify-between gap-3';
+        banner.innerHTML = `
+          <div>
+            <span class="text-[11px] font-extrabold uppercase px-2 py-0.5 rounded bg-sky-700 text-white">MODO SOLO LECTURA (EJECUTIVO / GERENCIA / DIRECCIÓN)</span>
+            <p class="text-xs text-sky-900 font-medium mt-1">Visualización completa de métricas, tiempos efectivos, traslados y exportación a Excel. Los botones de alteración o cierre por contingencia están reservados al Administrador.</p>
+          </div>
+        `;
+      }
+
+      document.getElementById('branchFormCard').classList.toggle('opacity-50', !isAdmin);
+      document.getElementById('branchFormCard').classList.toggle('pointer-events-none', !isAdmin);
+      document.getElementById('userFormCard').classList.toggle('opacity-50', !isAdmin);
+      document.getElementById('userFormCard').classList.toggle('pointer-events-none', !isAdmin);
+
+      document.getElementById('kpiBranchesCount').textContent = state.sucursales.length;
+      document.getElementById('kpiPromVisitsCount').textContent = state.visitasPromotor.length;
+      document.getElementById('kpiSupVisitsCount').textContent = state.visitasSupervisor.length;
+
+      renderAdminSpreadsheet();
+      renderBranchesCatalog();
+      renderUsersDirectory();
+    }
+
+    function renderAdminSpreadsheet() {
+      const isAdmin = state.currentUser && state.currentUser.rol === 'admin';
+      const filterPlaza = document.getElementById('filterPlazaSelect').value;
+
+      const promRows = state.visitasPromotor.filter(v => filterPlaza === 'TODAS' || v.plaza === filterPlaza);
+      const promTbody = document.getElementById('adminPromotorTableBody');
+      promTbody.innerHTML = promRows.map(v => {
+        const canAuthorize = isAdmin && !v.estatus.startsWith('Cerrada');
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3">
+              <div class="font-bold text-slate-900">${v.nombreSucursal}</div>
+              <div class="text-[11px] text-slate-500">${v.plaza}</div>
+            </td>
+            <td class="py-2.5 px-3 font-medium text-slate-800">${v.nombrePromotor} <span class="text-slate-400">(#${v.numColaborador})</span></td>
+            <td class="py-2.5 px-3">
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${v.estatus.includes('Autorizada') ? 'bg-amber-100 text-amber-800' : (v.estatus === 'Cerrada' ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800')}">
+                ${v.estatus}
+              </span>
+              ${v.notaAdmin ? `<div class="text-[10px] text-amber-800 font-semibold mt-0.5">${v.notaAdmin}</div>` : ''}
+            </td>
+            <td class="py-2.5 px-3 font-mono text-[11px]">${v.horaEntrada || '--:--'} / ${v.horaSalida || '--:--'}</td>
+            <td class="py-2.5 px-3 text-right font-bold text-slate-900">${v.tiempoEfectivoMin} min</td>
+            <td class="py-2.5 px-3">${v.afluencia ? `<b>${v.afluencia}</b> (${v.ingresosClientes} ing.)` : '<span class="text-slate-400">--</span>'}</td>
+            <td class="py-2.5 px-3 max-w-xs">
+              ${v.ventaAmerica ? `<div class="text-emerald-800"><b>América:</b> ${v.ventaAmerica}</div>` : ''}
+              ${v.ventasCompetencia ? `<div class="text-slate-600"><b>Comp:</b> ${v.ventasCompetencia}</div>` : ''}
+            </td>
+            <td class="py-2.5 px-3 max-w-xs">
+              ${v.presupuestoAmerica ? `<div class="text-sky-800"><b>P. América:</b> ${v.presupuestoAmerica}</div>` : ''}
+              ${v.presupuestoCompetencia ? `<div class="text-slate-500"><b>P. Comp:</b> ${v.presupuestoCompetencia}</div>` : ''}
+            </td>
+            <td class="py-2.5 px-3 text-center">
+              ${canAuthorize ? `
+                <button type="button" onclick="openContingencyModal('promotor','${v.id}')" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] shadow-sm">
+                  ⚡ Cerrar Autorizado
+                </button>
+              ` : '<span class="text-[11px] text-slate-400">Verificado</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const supRows = state.visitasSupervisor.filter(v => filterPlaza === 'TODAS' || v.plaza === filterPlaza);
+      const supTbody = document.getElementById('adminSupervisorTableBody');
+      supTbody.innerHTML = supRows.map(v => {
+        const canAuthorize = isAdmin && !v.estatus.startsWith('Cerrada');
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-bold">#${v.orden} • ${v.tipo}</td>
+            <td class="py-2.5 px-3">
+              <div class="font-bold text-slate-900">${v.nombreSupervisor}</div>
+              <div class="text-[11px] text-slate-500">${v.plaza}</div>
+            </td>
+            <td class="py-2.5 px-3">
+              <div class="font-semibold text-slate-800">${v.destinoNombre}</div>
+              ${v.folioGarantia ? `<div class="text-[11px] text-amber-800 font-bold">Folio: ${v.folioGarantia}</div>` : ''}
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${v.estatus.includes('Autorizada') ? 'bg-amber-100 text-amber-800' : (v.estatus === 'Cerrada' ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800')}">
+                ${v.estatus}
+              </span>
+            </td>
+            <td class="py-2.5 px-3 font-mono text-[11px]">${v.horaEntrada || '--:--'} / ${v.horaSalida || '--:--'}</td>
+            <td class="py-2.5 px-3 text-right font-semibold text-indigo-700">${v.tiempoTrasladoMin} min</td>
+            <td class="py-2.5 px-3 text-right font-bold text-emerald-700">${v.tiempoEstanciaMin} min</td>
+            <td class="py-2.5 px-3">
+              ${v.tipo === 'Garantia' ? `<span class="font-semibold text-amber-900">${v.fotosGarantia.filter(Boolean).length}/6 fotos • ${v.dictamenGarantia || 'En revisión'}</span>` : (v.notaAdmin || 'Supervisión Piso OK')}
+            </td>
+            <td class="py-2.5 px-3 text-center">
+              ${canAuthorize ? `
+                <button type="button" onclick="openContingencyModal('supervisor','${v.id}')" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] shadow-sm">
+                  ⚡ Cerrar Autorizado
+                </button>
+              ` : '<span class="text-[11px] text-slate-400">Verificado</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openContingencyModal(type, id) {
+      state.activeContingencyTarget = { type, id };
+      document.getElementById('contingencyNotes').value = '';
+      document.getElementById('contingencyTargetLabel').textContent = `Registro ID: ${id} (${type.toUpperCase()})`;
+      const modal = document.getElementById('contingencyModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeContingencyModal() {
+      const modal = document.getElementById('contingencyModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      state.activeContingencyTarget = null;
+    }
+
+    function confirmContingencyClose() {
+      const target = state.activeContingencyTarget;
+      if (!target) return;
+      const reason = document.getElementById('contingencyReason').value;
+      const notes = document.getElementById('contingencyNotes').value.trim();
+      const summary = `${reason}${notes ? ' — ' + notes : ''}`;
+
+      if (target.type === 'promotor') {
+        const item = state.visitasPromotor.find(v => v.id === target.id);
+        if (item) {
+          item.estatus = 'Cerrada - Autorizada Admin';
+          if (!item.horaSalida) item.horaSalida = formatTimeNow();
+          item.notaAdmin = `Autorizado por Admin: ${summary}`;
+        }
+      } else {
+        const item = state.visitasSupervisor.find(v => v.id === target.id);
+        if (item) {
+          item.estatus = 'Cerrada - Autorizada Admin';
+          if (!item.horaSalida) item.horaSalida = formatTimeNow();
+          item.notaAdmin = `Autorizado por Admin: ${summary}`;
+        }
+      }
+      closeContingencyModal();
+      renderAdminSpreadsheet();
+      showToast('Visita cerrada como AUTORIZADA POR ADMINISTRADOR con registro de auditoría.', 'warn');
+    }
+
+    // Catálogo de Sucursales y Geocerca 100m
+    function renderBranchesCatalog() {
+      const isAdmin = state.currentUser && state.currentUser.rol === 'admin';
+      const list = document.getElementById('branchesCatalogList');
+      list.innerHTML = state.sucursales.map((s, idx) => `
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div>
+            <div class="font-bold text-slate-900">${s.nombre} <span class="text-sky-700 font-mono">(${s.codigo})</span> — <span class="text-slate-600">${s.plaza}</span></div>
+            <div class="text-slate-500 font-mono mt-0.5">Coordenadas GPS: ${s.lat}, ${s.lng} • Radio: 100 metros</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full font-bold text-[11px] ${s.geocercaActiva ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
+              ${s.geocercaActiva ? '🔒 Geocerca 100m Activa' : '🔓 Geocerca Desactivada'}
+            </span>
+            ${isAdmin ? `
+              <button type="button" onclick="toggleBranchGeofence(${idx})" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 font-semibold text-[11px]">
+                Cambiar
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleBranchGeofence(index) {
+      const branch = state.sucursales[index];
+      if (!branch) return;
+      branch.geocercaActiva = !branch.geocercaActiva;
+      renderBranchesCatalog();
+      showToast(`Geocerca 100m para ${branch.nombre}: ${branch.geocercaActiva ? 'ACTIVADA' : 'DESACTIVADA'}.`, 'info');
+    }
+
+    function fillCurrentGpsForBranch() {
+      document.getElementById('newBranchLat').value = '20.6789';
+      document.getElementById('newBranchLng').value = '-103.3945';
+      showToast('Coordenadas GPS del dispositivo capturadas automáticamente.', 'info');
+    }
+
+    function createNewBranch() {
+      const code = document.getElementById('newBranchCode').value.trim().toUpperCase();
+      const name = document.getElementById('newBranchName').value.trim();
+      const plaza = document.getElementById('newBranchPlaza').value;
+      const lat = parseFloat(document.getElementById('newBranchLat').value || '20.66');
+      const lng = parseFloat(document.getElementById('newBranchLng').value || '-103.32');
+      if (!code || !name) {
+        showToast('Ingresa el código y el nombre de la nueva sucursal.', 'error');
+        return;
+      }
+      state.sucursales.unshift({ codigo: code, nombre: name, plaza, lat, lng, geocercaActiva: true });
+      document.getElementById('newBranchCode').value = '';
+      document.getElementById('newBranchName').value = '';
+      renderAdminExecutiveView();
+      showToast(`Sucursal ${name} (${plaza}) agregada con candado de 100 metros.`, 'success');
+    }
+
+    // Gestión de Usuarios y Perfiles
+    function renderUsersDirectory() {
+      const isAdmin = state.currentUser && state.currentUser.rol === 'admin';
+      const list = document.getElementById('usersDirectoryList');
+      list.innerHTML = state.usuarios.map((u, idx) => `
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div>
+            <div class="font-bold text-slate-900">${u.nombre} — <span class="uppercase text-sky-700">${u.rol}</span></div>
+            <div class="text-slate-500 mt-0.5">No. Colaborador (Login): <b class="font-mono text-slate-800">${u.id}</b> • Password: <b class="font-mono text-slate-800">${u.pass}</b> • Plaza: <b>${u.plaza}</b></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full font-bold text-[11px] ${u.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+              ${u.activo ? 'Activo' : 'Baja / Bloqueado'}
+            </span>
+            ${isAdmin ? `
+              <button type="button" onclick="toggleUserActive(${idx})" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 font-semibold text-[11px]">
+                ${u.activo ? 'Bloquear' : 'Reactivar'}
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleUserActive(idx) {
+      const u = state.usuarios[idx];
+      if (!u) return;
+      u.activo = !u.activo;
+      renderUsersDirectory();
+      showToast(`Acceso de ${u.nombre} (#${u.id}): ${u.activo ? 'HABILITADO' : 'BLOQUEADO'}.`, 'info');
+    }
+
+    function createNewUserAccount() {
+      const id = document.getElementById('newUserColabId').value.trim();
+      const pass = document.getElementById('newUserPass').value.trim();
+      const nombre = document.getElementById('newUserName').value.trim();
+      const rol = document.getElementById('newUserRole').value;
+      const plaza = document.getElementById('newUserPlaza').value;
+      if (!id || !pass || !nombre) {
+        showToast('Completa No. de Colaborador, Contraseña y Nombre.', 'error');
+        return;
+      }
+      state.usuarios.unshift({ id, pass, nombre, rol, plaza, activo: true });
+      document.getElementById('newUserColabId').value = '';
+      document.getElementById('newUserName').value = '';
+      renderUsersDirectory();
+      showToast(`Colaborador ${nombre} (#${id}) dado de alta con perfil ${rol.toUpperCase()}.`, 'success');
+    }
+
+    // Exportación a Hoja de Cálculo CSV (Compatible con Excel / Google Sheets)
+    function exportAllToCSV() {
+      const headers = [
+        'Tipo_Registro', 'Fecha', 'Plaza', 'Sucursal_o_Destino', 'Colaborador_ID', 'Nombre',
+        'Estatus', 'Hora_Entrada', 'Hora_Salida', 'Tiempo_Traslado_Min', 'Tiempo_Efectivo_Estancia_Min',
+        'Afluencia', 'Ingresos_Clientes', 'Venta_Colchones_America', 'Ventas_Competencia',
+        'Presupuesto_America', 'Presupuesto_Competencia', 'Folio_Garantia', 'Auditor_Admin'
+      ];
+      const rows = [];
+
+      state.visitasPromotor.forEach(v => {
+        rows.push([
+          'PROMOTOR_PISO', v.fecha, v.plaza, v.nombreSucursal, v.numColaborador, v.nombrePromotor,
+          v.estatus, v.horaEntrada || '', v.horaSalida || '', 0, v.tiempoEfectivoMin,
+          v.afluencia, v.ingresosClientes, v.ventaAmerica, v.ventasCompetencia,
+          v.presupuestoAmerica, v.presupuestoCompetencia, '', v.notaAdmin
+        ]);
+      });
+
+      state.visitasSupervisor.forEach(v => {
+        rows.push([
+          'SUPERVISOR_' + v.tipo.toUpperCase(), '2026-11-04', v.plaza, v.destinoNombre, v.numSupervisor, v.nombreSupervisor,
+          v.estatus, v.horaEntrada || '', v.horaSalida || '', v.tiempoTrasladoMin, v.tiempoEstanciaMin,
+          '', '', '', '', '', '', v.folioGarantia || '', v.dictamenGarantia || v.notaAdmin
+        ]);
+      });
+
+      const csvContent = '\uFEFF' + [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ColchoCheck_Concentrado_SuperColchones_GNC.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Hoja de cálculo CSV descargada correctamente.', 'success');
+    }
+
+    // Inicializar relojes al cargar
+    window.addEventListener('DOMContentLoaded', () => {
+      startGlobalClocks();
+    });
+  </script>
+</body>
+</html>
