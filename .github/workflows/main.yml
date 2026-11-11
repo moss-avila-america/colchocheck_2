@@ -1,0 +1,50 @@
+name: Compilar APK ColchoCheck
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build_apk:
+    name: Generar APK Android
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Descargar archivos del repositorio
+        uses: actions/checkout@v4
+
+      - name: 2. Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 3. Instalar Flutter Estable
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: 4. Preparar proyecto Android sin conflictos
+        run: |
+          mkdir -p /tmp/app_colchocheck
+          cd /tmp/app_colchocheck
+          flutter create . --project-name colchocheck --org com.supercolchones.colchocheck
+          if [ -f "$GITHUB_WORKSPACE/main.dart" ]; then
+            cp "$GITHUB_WORKSPACE/main.dart" lib/main.dart
+          elif [ -f "$GITHUB_WORKSPACE/lib/main.dart" ]; then
+            cp "$GITHUB_WORKSPACE/lib/main.dart" lib/main.dart
+          elif [ -f "$GITHUB_WORKSPACE/colchocheck_apk_project/lib/main.dart" ]; then
+            cp "$GITHUB_WORKSPACE/colchocheck_apk_project/lib/main.dart" lib/main.dart
+          fi
+          flutter pub get
+
+      - name: 5. Compilar archivo APK Release
+        run: |
+          cd /tmp/app_colchocheck
+          flutter build apk --release --no-tree-shake-icons
+
+      - name: 6. Entregar Instalador APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ColchoCheck-APK-Listo
+          path: /tmp/app_colchocheck/build/app/outputs/flutter-apk/app-release.apk
